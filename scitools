@@ -12,7 +12,6 @@ $version = "2.0";
 
 # LOAD MODULES
 use Cwd;
-use Getopt::Std; %opt = ();
 use sci_utils::general;
 use Exporter "import";
 
@@ -27,6 +26,8 @@ if (-e "$ENV{'HOME'}/.scitools.cfg") {
 	$SCITOOLS_DEFAULTS = shift(@ARGV);
 	print STDERR "INFO: Special config file detected as first argument. ($ARGV[0])\n";
 }
+# BARCODE COLLAPSE FILE
+$TRIPLET2ASCII_FILE = "$RealBin/triplet2ascii.txt";
 load_defaults($SCITOOLS_DEFAULTS,$RealBin);
 
 # LOAD COMMANDS DIRECTLY FROM MODULE FILES
@@ -125,54 +126,7 @@ if (defined $ARGV[0]) {
 	die $die;
 }
 
-# SUBROUTINES
-sub load_defaults {
-	# Some global ones that are not configured
-	$color_mapping = "none";
-	$ref_shortcuts = "";
-	$log_check = "F";
-	@BASES = ("A", "C", "G", "T", "N");
-	%REF;
-	if (-e "$_[0]") {
-		open DEF, "$_[0]";
-		while ($def = <DEF>) {
-			if ($def !~ /^#/) {
-				chomp $def;
-				($var,$val) = split(/=/, $def);
-				if ($var =~ /_ref$/) {
-					$refID = $var; $refID =~ s/_ref$//;
-					$REF{$refID} = $val;
-					$ref_shortcuts .= "\t$refID = $val\n";
-				} else { # software calls
-					if ($var eq "gzip") {$gzip = $val}
-					elsif ($var eq "zcat") {$zcat = $val}
-					elsif ($var eq "bwa") {$bwa = $val}
-					elsif ($var eq "samtools") {$samtools = $val}
-					elsif ($var eq "scitools") {$scitools = $val}
-					elsif ($var eq "macs2") {$macs2 = $val}
-					elsif ($var eq "bedtools") {$bedtools = $val}
-					elsif ($var eq "Rscript") {$Rscript = $val}
-					elsif ($var eq "Pscript") {$Pscript = $val}
-					elsif ($var eq "bowtie2") {$bowtie2 = $val}
-					elsif ($var eq "bismark") {$bismark = $val}
-					elsif ($var eq "snap_aligner") {$snap_aligner = $val};
-				}
-			}
-		} close DEF;
-	}
-	# Load vars that need to be specified for functionality if they are not found in the config file
-	if (!defined $gzip) {$gzip = "gzip"};
-	if (!defined $zcat) {$zcat = "zcat"};
-	if (!defined $bwa) {$bwa = "bwa"};
-	if (!defined $samtools) {$samtools = "samtools"};
-	if (!defined $scitools) {$scitools = "scitools"};
-	if (!defined $macs2) {$macs2 = "macs2"};
-	if (!defined $bedtools) {$bedtools = "bedtools"};
-	if (!defined $Rscript) {$Rscript = "Rscript"};
-	if (!defined $Pscript) {$Pscript = "python"};
-	if (!defined $bowtie2) {$bowtie2 = "bowtie2"};
-	if (!defined $bismark) {$bismark = "bismark"};
-}
+# ALIASES
 
 sub load_aliases {
 	
@@ -183,8 +137,10 @@ sub load_aliases {
 	
 	# Annotation Commands
 	foreach $alias ("annot_make", "make_annot") {$COMMAND_ALIAS{$alias} = "annot_make"};
-
+	
 }
+
+# COMMAND DESCRIPTIONS
 
 sub load_descriptions {
 	
@@ -194,5 +150,9 @@ sub load_descriptions {
 	
 	# Annotation Commands
 	$COMMAND_DESCRIPTOR{"annot_make"} = "Make annotations from a design file.";
+	
+	# Barcode commands
+	$COMMAND_DESCRIPTOR{"barcode_collapse"} = "Collapses a barcode into ascii form.";
+	$COMMAND_DESCRIPTOR{"barcode_expand"} = "Expands a barcode from ascii form.";
 
 }
